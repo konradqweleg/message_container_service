@@ -8,5 +8,6 @@ import reactor.core.publisher.Mono;
 public interface DatabasePort {
 //    Flux<Message> getUserMessagesSinceTag(LastMessageUserTag lastMessageUserTag);
     Mono<Message> insertMessage(Message message);
+    Flux<Message> getLastMessagesWithFriendForUser(Long idUser);
 //    Flux<Message> getLastMessagesForUsers();
 }

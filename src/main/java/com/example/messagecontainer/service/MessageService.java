@@ -3,6 +3,7 @@ package com.example.messagecontainer.service;
 import com.example.messagecontainer.entity.request.FriendData;
 import com.example.messagecontainer.entity.request.IdUserData;
 import com.example.messagecontainer.entity.request.MessageData;
+import com.example.messagecontainer.entity.response.MessageResponse;
 import com.example.messagecontainer.entity.response.Result;
 import com.example.messagecontainer.entity.response.Status;
 import com.example.messagecontainer.model.Message;
@@ -11,6 +12,7 @@ import com.example.messagecontainer.port.out.DatabasePort;
 import com.example.messagecontainer.port.out.FiendServicePort;
 import com.example.messagecontainer.port.out.UserServicePort;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
@@ -55,4 +57,18 @@ public class MessageService implements MessagePort {
         );
 
     }
+
+    @Override
+    public Flux<MessageResponse> getLastMessagesWithFriendForUser(Mono<IdUserData> idUserDataMono) {
+        return idUserDataMono.flatMapMany(idUserData ->
+                databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
+                        .map(message -> {
+                            long friendId = message.id_user_receiver() == idUserData.idUser() ?
+                                    message.id_user_sender() : message.id_user_receiver();
+                            return new MessageResponse(friendId, message.message(), message.date_time_message());
+                        })
+        );
+    }
+
+
 }

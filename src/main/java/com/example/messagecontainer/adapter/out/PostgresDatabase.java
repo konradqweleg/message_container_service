@@ -6,6 +6,7 @@ import com.example.messagecontainer.port.out.DatabasePort;
 import com.example.messagecontainer.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -21,5 +22,10 @@ public class PostgresDatabase implements DatabasePort {
     @Override
     public Mono<Message> insertMessage(Message message) {
         return messageRepository.save(message);
+    }
+
+    @Override
+    public Flux<Message> getLastMessagesWithFriendForUser(Long idUser) {
+        return messageRepository.getLastMessagesWithEachFriendsForSpecificUser(idUser);
     }
 }
