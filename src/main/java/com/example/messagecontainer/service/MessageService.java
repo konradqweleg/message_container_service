@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
+import java.util.Objects;
 
 @Service
 public class MessageService implements MessagePort {
@@ -63,9 +64,9 @@ public class MessageService implements MessagePort {
         return idUserDataMono.flatMapMany(idUserData ->
                 databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
                         .map(message -> {
-                            long friendId = message.id_user_receiver() == idUserData.idUser() ?
+                            long friendId = Objects.equals(message.id_user_receiver(), idUserData.idUser()) ?
                                     message.id_user_sender() : message.id_user_receiver();
-                            return new MessageResponse(friendId, message.message(), message.date_time_message());
+                            return new MessageResponse(friendId, message.message(), message.id(),message.date_time_message());
                         })
         );
     }

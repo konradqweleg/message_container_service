@@ -2,5 +2,5 @@ package com.example.messagecontainer.entity.response;
 
 import java.sql.Timestamp;
 
-public record MessageResponse(Long idFriend, String message, Timestamp dateTimeMessage) {
+public record MessageResponse(Long idFriend, String message,Long idMessage, Timestamp dateTimeMessage) {
 }

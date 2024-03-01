@@ -11,8 +11,8 @@ import reactor.core.publisher.Mono;
 
 
 public interface MessagePort {
-
     Mono<Result<Status>> insertMessage(Mono<MessageData> message);
-
     Flux<MessageResponse> getLastMessagesWithFriendForUser(Mono<IdUserData> idUserDataMono);
+
+
 }
