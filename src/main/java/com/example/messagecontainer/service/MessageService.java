@@ -66,7 +66,7 @@ public class MessageService implements MessagePort {
                         .map(message -> {
                             long friendId = Objects.equals(message.id_user_receiver(), idUserData.idUser()) ?
                                     message.id_user_sender() : message.id_user_receiver();
-                            return new MessageResponse(friendId, message.message(), message.id(),message.date_time_message());
+                            return new MessageResponse(friendId,message.id_user_sender(), message.id_user_receiver(), message.message(), message.id(),message.date_time_message());
                         })
         );
     }

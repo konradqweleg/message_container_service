@@ -1,3 +1,5 @@
+
+-- DROP SCHEMA IF EXISTS message_container_schema CASCADE;
 CREATE SCHEMA IF NOT EXISTS message_container_schema;
 
 CREATE TABLE IF NOT EXISTS message_container_schema.message(

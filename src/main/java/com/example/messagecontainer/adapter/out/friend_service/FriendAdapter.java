@@ -36,7 +36,6 @@ public class FriendAdapter implements FiendServicePort {
              .toEntity(String.class)
              .flatMap(responseEntity -> {
                  try {
-                     System.out.println(responseEntity.getBody());
                      IsFriends isFriends =  objectMapper.readValue(responseEntity.getBody(), IsFriends.class);
                      return Mono.just(Result.success(isFriends));
                  } catch (JsonProcessingException e) {
