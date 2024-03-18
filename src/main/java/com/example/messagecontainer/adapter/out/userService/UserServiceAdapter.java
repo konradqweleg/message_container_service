@@ -21,6 +21,7 @@ public class UserServiceAdapter implements UserServicePort {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+
     public UserServiceAdapter() throws URISyntaxException {
     }
 
