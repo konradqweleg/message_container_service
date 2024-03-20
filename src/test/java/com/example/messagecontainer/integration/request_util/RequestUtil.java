@@ -17,7 +17,7 @@ public class RequestUtil {
     }
 
     public URI createRequestGetLastMessagesWithFriends() throws URISyntaxException {
-        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getLastMessagesWithFriendForUser/");
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getLastMessagesWithFriendForUser?idUser=");
     }
 
 

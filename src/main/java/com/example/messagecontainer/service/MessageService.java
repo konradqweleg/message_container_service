@@ -64,8 +64,7 @@ public class MessageService implements MessagePort {
         return idUserDataMono.flatMapMany(idUserData ->
                 databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
                         .map(message -> {
-                            long friendId = Objects.equals(message.id_user_receiver(), idUserData.idUser()) ?
-                                    message.id_user_sender() : message.id_user_receiver();
+                            long friendId = Objects.equals(message.id_user_receiver(), idUserData.idUser()) ? message.id_user_sender() : message.id_user_receiver();
                             return new MessageResponse(friendId,message.id_user_sender(), message.id_user_receiver(), message.message(), message.id(),message.date_time_message());
                         })
         );
