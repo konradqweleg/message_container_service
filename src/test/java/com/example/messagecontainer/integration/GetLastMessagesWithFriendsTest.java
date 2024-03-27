@@ -35,7 +35,7 @@ public class GetLastMessagesWithFriendsTest extends DefaultTestConfiguration {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.length()").isEqualTo(0);
-        ;
+
     }
 
     @Test
