@@ -11,7 +11,10 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+
 import java.net.URISyntaxException;
 import java.util.Objects;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,7 +28,7 @@ public class InsertMessageTest extends DefaultTestConfiguration {
     private FiendServicePort friendServicePort;
 
     @Test
-    public void insertMessageShouldReturnCorrectStatus() throws URISyntaxException {
+    public void insertMessageShouldReturnCorrectStatusAndSavedNewMessageInDatabase() throws URISyntaxException {
         // given
         Long idFirstUser = 1L;
         Long idSecondUser = 2L;
@@ -56,6 +59,18 @@ public class InsertMessageTest extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody();
+
+
+        String sqlSelectAllMessages = "SELECT message FROM message_container_schema.message;";
+        //then
+        Flux<String> messagesInDb = databaseClient.sql(sqlSelectAllMessages)
+                .map((row, metadata) -> row.get("message", String.class)).all();
+
+
+        StepVerifier.create(messagesInDb)
+                .expectNextMatches(message -> message.equals("Hello"))
+                .expectComplete()
+                .verify();
 
     }
 
