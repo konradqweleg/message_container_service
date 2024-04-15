@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 public interface MessagePort {
     Mono<Result<Status>> insertMessage(Mono<MessageData> message);
+    Flux<MessageResponse> getMessageBetweenUsers(Mono<IdUserData> idFirstUserMono, Mono<IdUserData> idFriendMono);
     Flux<MessageResponse> getLastMessagesWithFriendForUser(Mono<IdUserData> idUserDataMono);
 
 

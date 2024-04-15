@@ -28,4 +28,9 @@ public class MessageController {
     public Mono<ResponseEntity<String>> getLastMessagesWithFriendForUser(@RequestParam Long idUser) {
         return ConvertToJSON.convert(messagePort.getLastMessagesWithFriendForUser( Mono.just(new IdUserData(idUser)))) ;
     }
+
+    @GetMapping("/getMessageBetweenUsers")
+    public Mono<ResponseEntity<String>> getMessageBetweenUsers(@RequestParam Long idFirstUser, @RequestParam Long idFriend) {
+        return ConvertToJSON.convert(messagePort.getMessageBetweenUsers(Mono.just(new IdUserData(idFirstUser)), Mono.just(new IdUserData(idFriend))));
+    }
 }

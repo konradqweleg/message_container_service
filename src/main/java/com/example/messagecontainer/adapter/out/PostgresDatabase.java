@@ -28,4 +28,11 @@ public class PostgresDatabase implements DatabasePort {
     public Flux<Message> getLastMessagesWithFriendForUser(Long idUser) {
         return messageRepository.getLastMessagesWithEachFriendsForSpecificUser(idUser);
     }
+
+    @Override
+    public Flux<Message> getAllMessagesBetweenUser(Long idFirstUser, Long idSecondUser) {
+        return messageRepository.getAllMessagesBetweenUser(idFirstUser,idSecondUser);
+    }
+
+
 }

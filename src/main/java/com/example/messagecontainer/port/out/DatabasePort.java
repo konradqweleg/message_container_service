@@ -9,5 +9,7 @@ public interface DatabasePort {
 //    Flux<Message> getUserMessagesSinceTag(LastMessageUserTag lastMessageUserTag);
     Mono<Message> insertMessage(Message message);
     Flux<Message> getLastMessagesWithFriendForUser(Long idUser);
+
+    Flux<Message> getAllMessagesBetweenUser(Long idFirstUser,Long idSecondUser);
 //    Flux<Message> getLastMessagesForUsers();
 }

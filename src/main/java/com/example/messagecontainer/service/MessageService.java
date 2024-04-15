@@ -60,6 +60,13 @@ public class MessageService implements MessagePort {
     }
 
     @Override
+    public Flux<MessageResponse> getMessageBetweenUsers(Mono<IdUserData> idFirstUserMono, Mono<IdUserData> idFriendMono) {
+        return idFirstUserMono.flatMapMany(idFirstUser -> idFriendMono.flatMapMany(idFriend -> databasePort.getAllMessagesBetweenUser(idFirstUser.idUser(), idFriend.idUser())
+                .map(message -> new MessageResponse(idFriend.idUser(),message.id_user_sender(), message.id_user_receiver(), message.message(), message.id(),message.date_time_message()))
+        ));
+    }
+
+    @Override
     public Flux<MessageResponse> getLastMessagesWithFriendForUser(Mono<IdUserData> idUserDataMono) {
         return idUserDataMono.flatMapMany(idUserData ->
                 databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
