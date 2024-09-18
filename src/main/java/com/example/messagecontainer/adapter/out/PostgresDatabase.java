@@ -2,9 +2,7 @@ package com.example.messagecontainer.adapter.out;
 
 import com.example.messagecontainer.model.Message;
 import com.example.messagecontainer.port.out.DatabasePort;
-
 import com.example.messagecontainer.repository.MessageRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,6 +30,11 @@ public class PostgresDatabase implements DatabasePort {
     @Override
     public Flux<Message> getAllMessagesBetweenUser(Long idFirstUser, Long idSecondUser) {
         return messageRepository.getAllMessagesBetweenUser(idFirstUser,idSecondUser);
+    }
+
+    @Override
+    public Flux<Message> getAllMessagesBetweenUserSinceId(Long idFirstUser, Long idSecondUser, Long messageId){
+        return messageRepository.getAllMessagesBetweenUserSinceId(idFirstUser,idSecondUser,messageId);
     }
 
 

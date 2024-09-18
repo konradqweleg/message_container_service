@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Service
 public class FriendAdapter implements FiendServicePort {
@@ -22,30 +24,41 @@ public class FriendAdapter implements FiendServicePort {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private static final Logger logger = LogManager.getLogger(FriendAdapter.class);
+
     public FriendAdapter() throws URISyntaxException {
     }
 
     @Override
     public Mono<Result<IsFriends>> isFriends(Mono<FriendData> friendsIds) {
-     return friendsIds.flatMap( friendData-> WebClient.create().get().uri(uriRequestIsFriends+"?friendFirstId=" + friendData.idFirstFriend().toString()+"&friendSecondId="+friendData.idSecondFriend().toString())
-             .retrieve()
-             .onStatus(
-                     HttpStatus.BAD_REQUEST::equals,
-                     response -> response.bodyToMono(String.class).map(Exception::new)
-             )
-             .toEntity(String.class)
-             .flatMap(responseEntity -> {
-                 try {
-                     IsFriends isFriends =  objectMapper.readValue(responseEntity.getBody(), IsFriends.class);
-                     return Mono.just(Result.success(isFriends));
-                 } catch (JsonProcessingException e) {
-                     return Mono.error(new RuntimeException(e));
-                 }
 
-             })
-             .onErrorResume(response -> Mono.<Result<IsFriends>>just(Result.<IsFriends>error(response.getMessage()))
-             )
-     );
+        return friendsIds.flatMap(friendData -> {
+            String uri = uriRequestIsFriends + "?friendFirstId=" + friendData.idFirstFriend() + "&friendSecondId=" + friendData.idSecondFriend();
 
+            return WebClient.create().get().uri(uri)
+                    .retrieve()
+                    .onStatus(
+                            HttpStatus.BAD_REQUEST::equals,
+                            response -> {
+                                logger.error("Bad request for friendship status: {}", response.statusCode());
+                                return Mono.error(new RuntimeException("Error retrieving friendship status"));
+                            }
+                    )
+                    .toEntity(String.class)
+                    .flatMap(responseEntity -> {
+                        try {
+                            IsFriends isFriends = objectMapper.readValue(responseEntity.getBody(), IsFriends.class);
+                            logger.info("Friendship status retrieved successfully");
+                            return Mono.just(Result.success(isFriends));
+                        } catch (JsonProcessingException e) {
+                            logger.error("Error parsing friendship status response: {}", e.getMessage());
+                            return Mono.error(new RuntimeException("Error retrieving friendship status"));
+                        }
+                    })
+                    .onErrorResume(e -> {
+                        logger.error("Error retrieving friendship status: {}", e.getMessage());
+                        return Mono.just(Result.<IsFriends>error("Error retrieving friendship status"));
+                    });
+        });
     }
 }
