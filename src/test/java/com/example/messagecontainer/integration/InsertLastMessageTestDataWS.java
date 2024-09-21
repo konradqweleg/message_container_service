@@ -20,7 +20,7 @@ import java.util.Objects;
 import static org.mockito.ArgumentMatchers.any;
 
 
-public class InsertLastMessageTestData extends DefaultTestConfiguration {
+public class InsertLastMessageTestDataWS extends DefaultTestConfiguration {
 
     @MockBean
     private UserServicePort userServicePort;

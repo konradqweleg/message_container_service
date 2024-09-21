@@ -1,4 +1,6 @@
 package com.example.messagecontainer.entity.request;
 
-public record MessageData(String message, Long id_user_sender, Long id_user_receiver) {
+import jakarta.validation.constraints.NotNull;
+
+public record MessageData(@NotNull String message,@NotNull Long id_user_sender,@NotNull Long id_user_receiver) {
 }

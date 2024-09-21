@@ -3,9 +3,7 @@ package com.example.messagecontainer.service;
 import com.example.messagecontainer.entity.request.FriendData;
 import com.example.messagecontainer.entity.request.IdUserData;
 import com.example.messagecontainer.entity.request.MainUserRequest;
-import com.example.messagecontainer.entity.request.MessageData;
-import com.example.messagecontainer.entity.response.LastMessageData;
-import com.example.messagecontainer.entity.response.MessageResponse;
+import com.example.messagecontainer.entity.response.MessageData;
 import com.example.messagecontainer.entity.response.Result;
 import com.example.messagecontainer.entity.response.Status;
 import com.example.messagecontainer.model.Message;
@@ -20,7 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.Timestamp;
-import java.util.Objects;
+
 
 @Service
 public class MessageService implements MessagePort {
@@ -41,7 +39,7 @@ public class MessageService implements MessagePort {
 
 
     @Override
-    public Mono<Result<Status>> insertMessage(Mono<MessageData> message) {
+    public Mono<Result<Status>> insertMessage(Mono<com.example.messagecontainer.entity.request.MessageData> message) {
         return message.flatMap(messageData -> userServicePort.getUserAboutId(Mono.just(new IdUserData(messageData.id_user_sender())))
                 .flatMap(userSender -> {
                     if (!userSender.isSuccess()) {
@@ -72,46 +70,78 @@ public class MessageService implements MessagePort {
                                                     .map(insertedMessage -> Result.success(new Status(true)))
                                                     .onErrorResume(e -> {
                                                         logger.error("Error inserting message: {}", e.getMessage());
-                                                        return Mono.just(Result.<Status>error("Error inserting message"));
+                                                        return Mono.just(Result.error("Error inserting message"));
                                                     });
                                         });
                             });
                 })
+                .doOnError(e -> logger.error("Unexpected error during inserting message", e))
+                .onErrorResume(e -> {
+                    logger.error("Error inserting message: {}", e.getMessage());
+                    return Mono.just(Result.error("Error inserting message"));
+                })
                 .switchIfEmpty(Mono.defer(() -> {
                     logger.error("User sender not found: {}", messageData.id_user_sender());
-                    return Mono.just(Result.<Status>error("Error inserting message"));
+                    return Mono.just(Result.error("Error inserting message"));
                 })));
     }
 
     @Override
-    public Flux<MessageResponse> getMessageBetweenUsers(Mono<IdUserData> idFirstUserMono, Mono<IdUserData> idFriendMono) {
-        return idFirstUserMono.flatMapMany(idFirstUser -> idFriendMono.flatMapMany(idFriend -> databasePort.getAllMessagesBetweenUser(idFirstUser.idUser(), idFriend.idUser())
-                .map(message -> new MessageResponse(idFriend.idUser(), message.id_user_sender(), message.id_user_receiver(), message.message(), message.id(), message.date_time_message()))
-        ));
+    public Flux<MessageData> getMessageBetweenUsers(Mono<IdUserData> idFirstUserMono, Mono<IdUserData> idFriendMono) {
+        return idFirstUserMono
+                .flatMapMany(idFirstUser ->
+                        idFriendMono
+                                .flatMapMany(idFriend ->
+                                        databasePort.getAllMessagesBetweenUser(idFirstUser.idUser(), idFriend.idUser())
+                                                .map(message -> new MessageData(
+                                                        message.id_user_sender(),
+                                                        message.id_user_receiver(),
+                                                        message.id(),
+                                                        message.message(),
+                                                        message.date_time_message()
+                                                ))
+                                                .onErrorResume(e -> {
+                                                    logger.error("Error fetching messages between user with ID: {} and friend with ID: {}", idFirstUser.idUser(), idFriend.idUser(), e);
+                                                    return Flux.error(new RuntimeException("Error fetching messages"));
+                                                })
+                                )
+                )
+                .doOnError(e -> logger.error("Unexpected error during fetching messages between users", e));
     }
 
-    @Override
-    public Flux<MessageResponse> getLastMessagesWithFriendForUser(Mono<IdUserData> idUserDataMono) {
-        return idUserDataMono.flatMapMany(idUserData ->
-                databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
-                        .map(message -> {
-                            long friendId = Objects.equals(message.id_user_receiver(), idUserData.idUser()) ? message.id_user_sender() : message.id_user_receiver();
-                            return new MessageResponse(friendId, message.id_user_sender(), message.id_user_receiver(), message.message(), message.id(), message.date_time_message());
-                        })
-        );
-    }
 
     @Override
-    public Flux<LastMessageData> getMessagesWithFriendsFromId(Mono<MainUserRequest> lastMessage) {
+    public Flux<MessageData> getLastMessagesWithFriendsForSpecificUser(Mono<IdUserData> idUserDataMono) {
+        return idUserDataMono
+                .flatMapMany(idUserData ->
+                        databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
+                                .map(message -> new MessageData(
+                                        message.id_user_sender(),
+                                        message.id_user_receiver(),
+                                        message.id(),
+                                        message.message(),
+                                        message.date_time_message()
+                                ))
+                                .onErrorResume(e -> {
+                                    logger.error("Error fetching messages for user with ID: {}", idUserData.idUser(), e);
+                                    return Flux.error(new Exception("Error fetching messages"));
+                                })
+                )
+                .doOnError(e -> logger.error("Unexpected error during fetching messages", e));
+    }
+
+
+    @Override
+    public Flux<MessageData> getMessagesWithFriendsFromId(Mono<MainUserRequest> lastMessage) {
 
         return lastMessage.flatMapMany(mainUserRequest -> Flux.fromIterable(mainUserRequest.lastMessages())
                 .flatMap(lastMsg -> databasePort.getAllMessagesBetweenUserSinceId(mainUserRequest.idMainUser(), lastMsg.idUser(), lastMsg.idLastMessageWithUser())
-                        .map(message -> new LastMessageData(
+                        .map(message -> new MessageData(
                                 message.id_user_sender(),
                                 message.id_user_receiver(),
                                 message.id(),
                                 message.message(),
-                                message.date_time_message().toString()
+                                message.date_time_message()
                         ))
                         .onErrorResume(e -> {
                             logger.error("Error fetching messages: {}", e.getMessage());

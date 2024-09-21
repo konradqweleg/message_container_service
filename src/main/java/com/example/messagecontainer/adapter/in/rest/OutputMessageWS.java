@@ -1,13 +1,13 @@
 package com.example.messagecontainer.adapter.in.rest;
 
 
-public class OutputMessage {
+public class OutputMessageWS {
 
     private String from;
     private String text;
     private String to;
 
-    public OutputMessage(final String from, final String text, final String to) {
+    public OutputMessageWS(final String from, final String text, final String to) {
 
         this.from = from;
         this.text = text;

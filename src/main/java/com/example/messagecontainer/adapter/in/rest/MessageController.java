@@ -25,9 +25,9 @@ public class MessageController {
         return messagePort.insertMessage(messageDataMono).flatMap(ConvertToJSON::convert);
     }
 
-    @GetMapping("/getLastMessagesWithFriendForUser")
+    @GetMapping("/getLastMessagesWithFriendsForUser")
     public Mono<ResponseEntity<String>> getLastMessagesWithFriendForUser(@RequestParam Long idUser) {
-        return ConvertToJSON.convert(messagePort.getLastMessagesWithFriendForUser( Mono.just(new IdUserData(idUser)))) ;
+        return ConvertToJSON.convert(messagePort.getLastMessagesWithFriendsForSpecificUser( Mono.just(new IdUserData(idUser)))) ;
     }
 
     @GetMapping("/getMessageBetweenUsers")

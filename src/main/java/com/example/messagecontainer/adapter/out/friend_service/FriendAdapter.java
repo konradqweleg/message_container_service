@@ -2,7 +2,6 @@ package com.example.messagecontainer.adapter.out.friend_service;
 
 import com.example.messagecontainer.entity.request.FriendData;
 import com.example.messagecontainer.entity.request.IsFriends;
-import com.example.messagecontainer.entity.request.UserData;
 import com.example.messagecontainer.entity.response.Result;
 import com.example.messagecontainer.port.out.FiendServicePort;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,7 +47,6 @@ public class FriendAdapter implements FiendServicePort {
                     .flatMap(responseEntity -> {
                         try {
                             IsFriends isFriends = objectMapper.readValue(responseEntity.getBody(), IsFriends.class);
-                            logger.info("Friendship status retrieved successfully");
                             return Mono.just(Result.success(isFriends));
                         } catch (JsonProcessingException e) {
                             logger.error("Error parsing friendship status response: {}", e.getMessage());
@@ -57,7 +55,7 @@ public class FriendAdapter implements FiendServicePort {
                     })
                     .onErrorResume(e -> {
                         logger.error("Error retrieving friendship status: {}", e.getMessage());
-                        return Mono.just(Result.<IsFriends>error("Error retrieving friendship status"));
+                        return Mono.just(Result.error("Error retrieving friendship status"));
                     });
         });
     }
