@@ -59,8 +59,8 @@ public class UserServiceAdapter implements UserServicePort {
                                 })
 
                 )
-                .doOnError(e -> logger.error("Unexpected error during fetching user details", e))
-                .doOnSuccess(result -> logger.info("Finished fetching user details"));
+                .doOnError(e -> logger.error("Unexpected error during fetching user details", e));
+
     }
 
 

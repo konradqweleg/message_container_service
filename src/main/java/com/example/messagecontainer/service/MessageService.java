@@ -71,7 +71,7 @@ public class MessageService implements MessagePort {
                                                     .onErrorResume(e -> {
                                                         logger.error("Error inserting message: {}", e.getMessage());
                                                         return Mono.just(Result.error("Error inserting message"));
-                                                    });
+                                                    }).doOnSuccess(statusResult -> logger.info("Message inserted successfully"));
                                         });
                             });
                 })
@@ -106,7 +106,9 @@ public class MessageService implements MessagePort {
                                                 })
                                 )
                 )
-                .doOnError(e -> logger.error("Unexpected error during fetching messages between users", e));
+                .doOnError(e -> logger.error("Unexpected error during fetching messages between users", e)).
+                doOnComplete(() -> logger.info("Messages fetched successfully"));
+
     }
 
 
@@ -127,7 +129,8 @@ public class MessageService implements MessagePort {
                                     return Flux.error(new Exception("Error fetching messages"));
                                 })
                 )
-                .doOnError(e -> logger.error("Unexpected error during fetching messages", e));
+                .doOnError(e -> logger.error("Unexpected error during fetching messages", e))
+                .doOnComplete(() -> logger.info("Messages fetched successfully"));
     }
 
 
@@ -146,7 +149,7 @@ public class MessageService implements MessagePort {
                         .onErrorResume(e -> {
                             logger.error("Error fetching messages: {}", e.getMessage());
                             return Flux.empty();
-                        })));
+                        }))).doOnComplete(() -> logger.info("Messages fetched successfully"));
     }
 
 
