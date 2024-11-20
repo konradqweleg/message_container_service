@@ -39,4 +39,9 @@ public class MessageController {
     public Mono<ResponseEntity<String>> getMessagesWithFriendsFromId(@RequestBody @Valid Mono<MainUserRequest> mainUserRequestMono) {
         return ConvertToJSON.convert(messagePort.getMessagesWithFriendsFromId(mainUserRequestMono));
     }
+
+    @GetMapping("/get")
+    public String get(@RequestHeader(value = "Hello", defaultValue = "World") String helloHeader) {
+        return "Received header: " + helloHeader;
+    }
 }
