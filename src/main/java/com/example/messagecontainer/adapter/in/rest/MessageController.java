@@ -1,17 +1,21 @@
 package com.example.messagecontainer.adapter.in.rest;
 
-import com.example.messagecontainer.adapter.in.rest.util.ConvertToJSON;
-import com.example.messagecontainer.entity.request.IdUserData;
+import com.example.messagecontainer.adapter.in.rest.util.ResponseUtil;
+import com.example.messagecontainer.entity.request.IdUserDTO;
 import com.example.messagecontainer.entity.request.MainUserRequest;
-import com.example.messagecontainer.entity.request.MessageData;
+import com.example.messagecontainer.entity.request.MessageDTO;
+import com.example.messagecontainer.entity.response.MessageData;
 import com.example.messagecontainer.port.in.MessagePort;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
-@RequestMapping(value = "/messageService/api/v1/message")
+@RequestMapping(value = "/api/v1/messages")
 public class MessageController {
 
     private final MessagePort messagePort;
@@ -20,28 +24,24 @@ public class MessageController {
         this.messagePort = messagePort;
     }
 
-    @PostMapping("/insertMessage")
-    public Mono<ResponseEntity<String>> createFriends(@RequestBody @Valid Mono<MessageData> messageDataMono) {
-        return messagePort.insertMessage(messageDataMono).flatMap(ConvertToJSON::convert);
+    @PostMapping
+    public Mono<ResponseEntity<Void>> createMessage(@RequestBody @Valid MessageDTO messageDataMono) {
+        return ResponseUtil.toResponseEntity(messagePort.insertMessage(messageDataMono), HttpStatus.CREATED);
     }
 
-    @GetMapping("/getLastMessagesWithFriendsForUser")
-    public Mono<ResponseEntity<String>> getLastMessagesWithFriendForUser(@RequestParam Long idUser) {
-        return ConvertToJSON.convert(messagePort.getLastMessagesWithFriendsForSpecificUser( Mono.just(new IdUserData(idUser)))) ;
+    @GetMapping("/{userId}/friends/last-messages")
+    public Mono<ResponseEntity<List<MessageData>>> getLastMessagesWithFriends(@PathVariable("userId") Long userId) {
+        return ResponseUtil.toResponseEntity(messagePort.getLastMessagesWithFriendsForSpecificUser(new IdUserDTO(userId)), HttpStatus.OK);
     }
 
-    @GetMapping("/getMessageBetweenUsers")
-    public Mono<ResponseEntity<String>> getMessageBetweenUsers(@RequestParam Long idFirstUser, @RequestParam Long idFriend) {
-        return ConvertToJSON.convert(messagePort.getMessageBetweenUsers(Mono.just(new IdUserData(idFirstUser)), Mono.just(new IdUserData(idFriend))));
+    @GetMapping("/{firstUserId}/friends/{friendId}/messages")
+    public Mono<ResponseEntity<List<MessageData>>> getMessagesBetweenUsers(@PathVariable("firstUserId") Long firstUserId, @PathVariable("friendId") Long friendId) {
+        return ResponseUtil.toResponseEntity(messagePort.getMessageBetweenUsers(new IdUserDTO(firstUserId), new IdUserDTO(friendId)), HttpStatus.OK);
     }
 
-    @PostMapping("/getMessagesWithFriendsFromId")
-    public Mono<ResponseEntity<String>> getMessagesWithFriendsFromId(@RequestBody @Valid Mono<MainUserRequest> mainUserRequestMono) {
-        return ConvertToJSON.convert(messagePort.getMessagesWithFriendsFromId(mainUserRequestMono));
-    }
-
-    @GetMapping("/get")
-    public String get(@RequestHeader(value = "Hello", defaultValue = "World") String helloHeader) {
-        return "Received header: " + helloHeader;
+    @PostMapping("/{userId}/friends/messages")
+    public Mono
+            <ResponseEntity<List<MessageData>>> getMessagesWithFriends(@PathVariable("userId") Long userId, @RequestBody @Valid MainUserRequest mainUserRequestMono) {
+        return ResponseUtil.toResponseEntity(messagePort.getMessagesWithFriendsFromId(new IdUserDTO(userId), mainUserRequestMono), HttpStatus.OK);
     }
 }

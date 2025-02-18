@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-public record MainUserRequest(@NotNull Long idMainUser, List<LastMessage> lastMessages) {
+public record MainUserRequest(List<LastMessage> lastMessages) {
 }
