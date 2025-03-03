@@ -1,11 +1,10 @@
 package com.example.messagecontainer.service;
 
-import com.example.messagecontainer.entity.request.*;
-import com.example.messagecontainer.entity.response.MessageData;
+import com.example.messagecontainer.entity.dto.*;
 import com.example.messagecontainer.exception.friend_service.UserAreNotFriendsException;
 import com.example.messagecontainer.model.Message;
 import com.example.messagecontainer.port.in.MessagePort;
-import com.example.messagecontainer.port.out.DatabasePort;
+import com.example.messagecontainer.port.out.RepositoryPort;
 import com.example.messagecontainer.port.out.FiendServicePort;
 import com.example.messagecontainer.port.out.UserServicePort;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +19,7 @@ import java.sql.Timestamp;
 @Service
 public class MessageService implements MessagePort {
 
-    private final DatabasePort databasePort;
+    private final RepositoryPort repositoryPort;
 
     private final UserServicePort userServicePort;
 
@@ -28,8 +27,8 @@ public class MessageService implements MessagePort {
 
     private static final Logger logger = LogManager.getLogger(MessageService.class);
 
-    public MessageService(DatabasePort databasePort, UserServicePort userServicePort, FiendServicePort friendServicePort) {
-        this.databasePort = databasePort;
+    public MessageService(RepositoryPort repositoryPort, UserServicePort userServicePort, FiendServicePort friendServicePort) {
+        this.repositoryPort = repositoryPort;
         this.userServicePort = userServicePort;
         this.friendServicePort = friendServicePort;
     }
@@ -40,8 +39,8 @@ public class MessageService implements MessagePort {
         return getUser(messageDTO.id_user_sender())
                 .flatMap(userSender -> getUser(messageDTO.id_user_receiver())
                         .flatMap(userReceiver -> checkFriendship(messageDTO.id_user_sender(), messageDTO.id_user_receiver())
-                                .flatMap(isFriends -> {
-                                    if (!isFriends.areFriends()) {
+                                .flatMap(isFriendsDTO -> {
+                                    if (!isFriendsDTO.areFriends()) {
                                         logger.error("Users are not friends: {} and {}", messageDTO.id_user_sender(), messageDTO.id_user_receiver());
                                         return Mono.error(new UserAreNotFriendsException("Users are not friends"));
                                     }
@@ -49,24 +48,24 @@ public class MessageService implements MessagePort {
                                 })));
     }
 
-    private Mono<UserData> getUser(Long userId) {
+    private Mono<UserDataDTO> getUser(Long userId) {
         return userServicePort.getUserAboutId(new IdUserDTO(userId));
     }
 
-    private Mono<IsFriends> checkFriendship(Long senderId, Long receiverId) {
+    private Mono<IsFriendsDTO> checkFriendship(Long senderId, Long receiverId) {
         return friendServicePort.isFriends(new FriendPairDTO(senderId, receiverId));
     }
 
     private Mono<Void> insertMessageIntoDatabase(MessageDTO messageDTO) {
-        return databasePort.insertMessage(new Message(null, messageDTO.message(), messageDTO.id_user_sender(), messageDTO.id_user_receiver(), new Timestamp(System.currentTimeMillis())))
+        return repositoryPort.insertMessage(new Message(null, messageDTO.message(), messageDTO.id_user_sender(), messageDTO.id_user_receiver(), new Timestamp(System.currentTimeMillis())))
                 .doOnSuccess(insertedMessage -> logger.info("Message inserted successfully"))
                 .then();
     }
 
     @Override
-    public Flux<MessageData> getMessageBetweenUsers(IdUserDTO idFirstUser, IdUserDTO idFriend) {
-        return databasePort.getAllMessagesBetweenUser(idFirstUser.idUser(), idFriend.idUser())
-                .map(message -> new MessageData(
+    public Flux<MessageDataDTO> getMessagesBetweenUsers(IdUserDTO idFirstUser, IdUserDTO idFriend) {
+        return repositoryPort.findAllMessagesBetweenUsers(idFirstUser.idUser(), idFriend.idUser())
+                .map(message -> new MessageDataDTO(
                         message.id_user_sender(),
                         message.id_user_receiver(),
                         message.id(),
@@ -78,9 +77,9 @@ public class MessageService implements MessagePort {
 
 
     @Override
-    public Flux<MessageData> getLastMessagesWithFriendsForSpecificUser(IdUserDTO idUserData) {
-        return databasePort.getLastMessagesWithFriendForUser(idUserData.idUser())
-                .map(message -> new MessageData(
+    public Flux<MessageDataDTO> getLastMessagesWithFriendsForSpecificUser(IdUserDTO idUserData) {
+        return repositoryPort.findLastMessagesWithFriendsByUserId(idUserData.idUser())
+                .map(message -> new MessageDataDTO(
                         message.id_user_sender(),
                         message.id_user_receiver(),
                         message.id(),
@@ -92,10 +91,10 @@ public class MessageService implements MessagePort {
 
 
     @Override
-    public Flux<MessageData> getMessagesWithFriendsFromId(IdUserDTO userId, MainUserRequest mainUserRequest) {
-        return Flux.fromIterable(mainUserRequest.lastMessages())
-                .flatMap(lastMsg -> databasePort.getAllMessagesBetweenUserSinceId(userId.idUser(), lastMsg.idUser(), lastMsg.idLastMessageWithUser())
-                        .map(message -> new MessageData(
+    public Flux<MessageDataDTO> getMessagesWithFriendsFromId(IdUserDTO userId, MainUserRequestDTO mainUserRequestDTO) {
+        return Flux.fromIterable(mainUserRequestDTO.lastMessageDTOS())
+                .flatMap(lastMsg -> repositoryPort.findAllMessagesBetweenUsersSinceMessageId(userId.idUser(), lastMsg.idUser(), lastMsg.idLastMessageWithUser())
+                        .map(message -> new MessageDataDTO(
                                 message.id_user_sender(),
                                 message.id_user_receiver(),
                                 message.id(),

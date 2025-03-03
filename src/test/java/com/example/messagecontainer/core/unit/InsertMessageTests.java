@@ -1,13 +1,12 @@
 package com.example.messagecontainer.core.unit;
 
 
-import com.example.messagecontainer.adapter.out.friend_service.FriendServiceAdapter;
-import com.example.messagecontainer.entity.request.*;
+import com.example.messagecontainer.entity.dto.*;
 import com.example.messagecontainer.exception.friend_service.UserAreNotFriendsException;
 import com.example.messagecontainer.exception.user_service.UserNotFoundException;
 import com.example.messagecontainer.model.Message;
 import com.example.messagecontainer.port.in.MessagePort;
-import com.example.messagecontainer.port.out.DatabasePort;
+import com.example.messagecontainer.port.out.RepositoryPort;
 import com.example.messagecontainer.port.out.FiendServicePort;
 import com.example.messagecontainer.port.out.UserServicePort;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ public class InsertMessageTests {
     private FiendServicePort friendServicePort;
 
     @MockBean
-    private DatabasePort databasePort;
+    private RepositoryPort repositoryPort;
 
     @Autowired
     private MessagePort messagePort;
@@ -44,15 +43,15 @@ public class InsertMessageTests {
         Long idUserReceiver = 2L;
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserSender)))
-                .thenReturn(Mono.just(new UserData(idUserSender, "John", "Doe", "mail@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserSender, "John", "Doe", "mail@mail.eu")));
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserReceiver)))
-                .thenReturn(Mono.just(new UserData(idUserReceiver, "Jane", "Smith", "jane@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserReceiver, "Jane", "Smith", "jane@mail.eu")));
 
         when(friendServicePort.isFriends(new FriendPairDTO(idUserSender, idUserReceiver)))
-                .thenReturn(Mono.just(new IsFriends(true)));
+                .thenReturn(Mono.just(new IsFriendsDTO(true)));
 
-        when(databasePort.insertMessage(any()))
+        when(repositoryPort.insertMessage(any()))
                 .thenReturn(Mono.empty());
 
         //when
@@ -62,7 +61,7 @@ public class InsertMessageTests {
         StepVerifier.create(result)
                 .verifyComplete();
 
-        Mockito.verify(databasePort, Mockito.times(1)).insertMessage(any(Message.class));
+        Mockito.verify(repositoryPort, Mockito.times(1)).insertMessage(any(Message.class));
 
     }
 
@@ -76,12 +75,12 @@ public class InsertMessageTests {
                 .thenReturn(Mono.error(new UserNotFoundException("User not found")));
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserReceiver)))
-                .thenReturn(Mono.just(new UserData(idUserReceiver, "John", "Doe", "mail@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserReceiver, "John", "Doe", "mail@mail.eu")));
 
         when(friendServicePort.isFriends(new FriendPairDTO(idUserSender, idUserReceiver)))
-                .thenReturn(Mono.just(new IsFriends(true)));
+                .thenReturn(Mono.just(new IsFriendsDTO(true)));
 
-        when(databasePort.insertMessage(any()))
+        when(repositoryPort.insertMessage(any()))
                 .thenReturn(Mono.empty());
 
         //when
@@ -91,7 +90,7 @@ public class InsertMessageTests {
         StepVerifier.create(result)
                 .expectError(UserNotFoundException.class).verify();
 
-        Mockito.verify(databasePort, Mockito.times(0)).insertMessage(any(Message.class));
+        Mockito.verify(repositoryPort, Mockito.times(0)).insertMessage(any(Message.class));
     }
 
     @Test
@@ -104,12 +103,12 @@ public class InsertMessageTests {
                 .thenReturn(Mono.error(new UserNotFoundException("User not found")));
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserReceiver)))
-                .thenReturn(Mono.just(new UserData(idUserReceiver, "John", "Doe", "mail@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserReceiver, "John", "Doe", "mail@mail.eu")));
 
         when(friendServicePort.isFriends(new FriendPairDTO(idUserSender, idUserReceiver)))
-                .thenReturn(Mono.just(new IsFriends(true)));
+                .thenReturn(Mono.just(new IsFriendsDTO(true)));
 
-        when(databasePort.insertMessage(any()))
+        when(repositoryPort.insertMessage(any()))
                 .thenReturn(Mono.empty());
 
         //when
@@ -119,7 +118,7 @@ public class InsertMessageTests {
         StepVerifier.create(result)
                 .expectError(UserNotFoundException.class).verify();
 
-        Mockito.verify(databasePort, Mockito.times(0)).insertMessage(any(Message.class));
+        Mockito.verify(repositoryPort, Mockito.times(0)).insertMessage(any(Message.class));
     }
 
     @Test
@@ -129,13 +128,13 @@ public class InsertMessageTests {
         Long idUserReceiver = 2L;
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserSender)))
-                .thenReturn(Mono.just(new UserData(idUserSender, "John", "Doe", "mail@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserSender, "John", "Doe", "mail@mail.eu")));
 
         when(userServicePort.getUserAboutId(new IdUserDTO(idUserReceiver)))
-                .thenReturn(Mono.just(new UserData(idUserReceiver, "Jane", "Smith", "jane@mail.eu")));
+                .thenReturn(Mono.just(new UserDataDTO(idUserReceiver, "Jane", "Smith", "jane@mail.eu")));
 
         when(friendServicePort.isFriends(new FriendPairDTO(idUserSender, idUserReceiver)))
-                .thenReturn(Mono.just(new IsFriends(false)));
+                .thenReturn(Mono.just(new IsFriendsDTO(false)));
 
         //when
         Mono<Void> result = messagePort.insertMessage(new MessageDTO("Hello", idUserSender, idUserReceiver));
@@ -145,7 +144,7 @@ public class InsertMessageTests {
                 .expectError(UserAreNotFriendsException.class)
                 .verify();
 
-        Mockito.verify(databasePort, Mockito.never()).insertMessage(any(Message.class));
+        Mockito.verify(repositoryPort, Mockito.never()).insertMessage(any(Message.class));
     }
 
 }

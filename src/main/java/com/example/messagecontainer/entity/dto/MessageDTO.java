@@ -1,4 +1,4 @@
-package com.example.messagecontainer.entity.request;
+package com.example.messagecontainer.entity.dto;
 
 import jakarta.validation.constraints.NotNull;
 

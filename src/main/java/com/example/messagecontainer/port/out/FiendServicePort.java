@@ -1,9 +1,9 @@
 package com.example.messagecontainer.port.out;
 
-import com.example.messagecontainer.entity.request.FriendPairDTO;
-import com.example.messagecontainer.entity.request.IsFriends;
+import com.example.messagecontainer.entity.dto.FriendPairDTO;
+import com.example.messagecontainer.entity.dto.IsFriendsDTO;
 import reactor.core.publisher.Mono;
 
 public interface FiendServicePort {
-    Mono<IsFriends> isFriends(FriendPairDTO friendsIds);
+    Mono<IsFriendsDTO> isFriends(FriendPairDTO friendsIds);
 }

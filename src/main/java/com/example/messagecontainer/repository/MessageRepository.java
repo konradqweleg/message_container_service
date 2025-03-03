@@ -13,13 +13,13 @@ public interface MessageRepository extends ReactiveCrudRepository<Message, Long>
             "FROM message_container_schema.message "+
             "WHERE id_user_sender = :idUser OR id_user_receiver = :idUser "+
             "ORDER BY id_user_sender, id_user_receiver, date_time_message DESC;")
-    Flux<Message> getLastMessagesWithEachFriendsForSpecificUser(Long idUser);
+    Flux<Message> findDistinctLastMessagesWithFriendsByUserId(Long idUser);
 
     @Query("SELECT * FROM message_container_schema.message WHERE id_user_sender = :idFirstUser AND id_user_receiver = :idSecondUser OR id_user_sender = :idSecondUser AND id_user_receiver = :idFirstUser")
-    Flux<Message> getAllMessagesBetweenUser(Long idFirstUser,Long idSecondUser);
+    Flux<Message> findAllMessagesBetweenUsers(Long idFirstUser, Long idSecondUser);
 
     @Query("SELECT * FROM message_container_schema.message WHERE (id_user_sender = :idFirstUser AND id_user_receiver = :idSecondUser OR id_user_sender = :idSecondUser AND id_user_receiver = :idFirstUser) AND id > :messageId")
-    Flux<Message> getAllMessagesBetweenUserSinceId(Long idFirstUser, Long idSecondUser, Long messageId);
+    Flux<Message> findAllMessagesBetweenUsersSinceMessageId(Long idFirstUser, Long idSecondUser, Long messageId);
 
 
 }

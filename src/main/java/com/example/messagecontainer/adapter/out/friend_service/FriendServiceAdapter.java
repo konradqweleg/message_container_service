@@ -1,7 +1,7 @@
 package com.example.messagecontainer.adapter.out.friend_service;
 
-import com.example.messagecontainer.entity.request.FriendPairDTO;
-import com.example.messagecontainer.entity.request.IsFriends;
+import com.example.messagecontainer.entity.dto.FriendPairDTO;
+import com.example.messagecontainer.entity.dto.IsFriendsDTO;
 import com.example.messagecontainer.exception.friend_service.FriendDataParsingException;
 import com.example.messagecontainer.exception.friend_service.GeneralFriendServiceException;
 import com.example.messagecontainer.exception.friend_service.InvalidFriendRequestException;
@@ -33,7 +33,7 @@ public class FriendServiceAdapter implements FiendServicePort {
     }
 
     @Override
-    public Mono<IsFriends> isFriends(FriendPairDTO friendsIds) {
+    public Mono<IsFriendsDTO> isFriends(FriendPairDTO friendsIds) {
         String uri = UriComponentsBuilder.fromUri(uriRequestIsFriends)
                 .queryParam("friendFirstId", friendsIds.idFirstFriend())
                 .queryParam("friendSecondId", friendsIds.idSecondFriend())
@@ -52,8 +52,8 @@ public class FriendServiceAdapter implements FiendServicePort {
                 .toEntity(String.class)
                 .flatMap(responseEntity -> {
                     try {
-                        IsFriends isFriends = objectMapper.readValue(responseEntity.getBody(), IsFriends.class);
-                        return Mono.just(isFriends);
+                        IsFriendsDTO isFriendsDTO = objectMapper.readValue(responseEntity.getBody(), IsFriendsDTO.class);
+                        return Mono.just(isFriendsDTO);
                     } catch (JsonProcessingException e) {
                         logger.error("Error parsing friendship status response: {}", e.getMessage());
                         return Mono.error(new FriendDataParsingException("Error retrieving friendship status, parsing error"));

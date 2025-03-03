@@ -1,9 +1,9 @@
 package com.example.messagecontainer.port.out;
 
-import com.example.messagecontainer.entity.request.IdUserDTO;
-import com.example.messagecontainer.entity.request.UserData;
+import com.example.messagecontainer.entity.dto.IdUserDTO;
+import com.example.messagecontainer.entity.dto.UserDataDTO;
 import reactor.core.publisher.Mono;
 
 public interface UserServicePort {
-    Mono<UserData> getUserAboutId(IdUserDTO idUserDTOMono);
+    Mono<UserDataDTO> getUserAboutId(IdUserDTO idUserDTOMono);
 }

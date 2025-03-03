@@ -1,7 +1,7 @@
 package com.example.messagecontainer.adapter.out.userService;
 
-import com.example.messagecontainer.entity.request.IdUserDTO;
-import com.example.messagecontainer.entity.request.UserData;
+import com.example.messagecontainer.entity.dto.IdUserDTO;
+import com.example.messagecontainer.entity.dto.UserDataDTO;
 import com.example.messagecontainer.exception.user_service.GeneralUserServiceException;
 import com.example.messagecontainer.exception.user_service.InvalidUserRequestException;
 import com.example.messagecontainer.exception.user_service.UserDataParsingException;
@@ -32,7 +32,7 @@ public class UserServiceAdapter implements UserServicePort {
     }
 
     @Override
-    public Mono<UserData> getUserAboutId(IdUserDTO idUserDTO) {
+    public Mono<UserDataDTO> getUserAboutId(IdUserDTO idUserDTO) {
         return WebClient.create().get()
                 .uri(uriGetUserAboutId + idUserDTO.idUser().toString())
                 .retrieve()
@@ -47,8 +47,8 @@ public class UserServiceAdapter implements UserServicePort {
                 .toEntity(String.class)
                 .flatMap(responseEntity -> {
                     try {
-                        UserData userData = objectMapper.readValue(responseEntity.getBody(), UserData.class);
-                        return Mono.just(userData);
+                        UserDataDTO userDataDTO = objectMapper.readValue(responseEntity.getBody(), UserDataDTO.class);
+                        return Mono.just(userDataDTO);
                     } catch (JsonProcessingException e) {
                         logger.error("Error parsing user data for user with ID: {}", idUserDTO.idUser(), e);
                         return Mono.error(new UserDataParsingException("Error fetching user details"));

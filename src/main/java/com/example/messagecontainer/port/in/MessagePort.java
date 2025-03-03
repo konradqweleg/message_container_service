@@ -1,9 +1,9 @@
 package com.example.messagecontainer.port.in;
 
-import com.example.messagecontainer.entity.request.IdUserDTO;
-import com.example.messagecontainer.entity.request.MainUserRequest;
-import com.example.messagecontainer.entity.request.MessageDTO;
-import com.example.messagecontainer.entity.response.MessageData;
+import com.example.messagecontainer.entity.dto.IdUserDTO;
+import com.example.messagecontainer.entity.dto.MainUserRequestDTO;
+import com.example.messagecontainer.entity.dto.MessageDTO;
+import com.example.messagecontainer.entity.dto.MessageDataDTO;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -11,8 +11,8 @@ import reactor.core.publisher.Mono;
 
 public interface MessagePort {
     Mono<Void> insertMessage(MessageDTO message);
-    Flux<MessageData> getMessageBetweenUsers(IdUserDTO idFirstUserMono, IdUserDTO idFriendMono);
-    Flux<MessageData> getLastMessagesWithFriendsForSpecificUser(IdUserDTO idUserDTOMono);
-    Flux<MessageData> getMessagesWithFriendsFromId(IdUserDTO idUserDTO,MainUserRequest lastMessage);
+    Flux<MessageDataDTO> getMessagesBetweenUsers(IdUserDTO idFirstUserMono, IdUserDTO idFriendMono);
+    Flux<MessageDataDTO> getLastMessagesWithFriendsForSpecificUser(IdUserDTO idUserDTOMono);
+    Flux<MessageDataDTO> getMessagesWithFriendsFromId(IdUserDTO idUserDTO, MainUserRequestDTO lastMessage);
 
 }
