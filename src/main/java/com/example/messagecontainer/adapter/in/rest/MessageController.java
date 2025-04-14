@@ -40,8 +40,7 @@ public class MessageController {
     }
 
     @PostMapping("/{userId}/friends/messages")
-    public Mono
-            <ResponseEntity<List<MessageDataDTO>>> getMessagesWithFriends(@PathVariable("userId") Long userId, @RequestBody @Valid MainUserRequestDTO mainUserRequestDTOMono) {
+    public Mono<ResponseEntity<List<MessageDataDTO>>> getMessagesWithFriends(@PathVariable("userId") Long userId, @RequestBody @Valid MainUserRequestDTO mainUserRequestDTOMono) {
         return ResponseUtil.toResponseEntity(messagePort.getMessagesWithFriendsFromId(new IdUserDTO(userId), mainUserRequestDTOMono), HttpStatus.OK);
     }
 }
