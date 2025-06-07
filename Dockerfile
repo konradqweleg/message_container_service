@@ -12,8 +12,8 @@ FROM openjdk:17-jdk-slim AS runtime
 
 WORKDIR /app
 
-COPY --from=build /app/build/libs/mychat-message-container-service.jar mychat-message-container-service.jar
+COPY --from=build /app/build/libs/message-service.jar message-service.jar
 
 EXPOSE 8084
 
-ENTRYPOINT ["java", "-jar", "mychat-massage-container-service.jar"]
+ENTRYPOINT ["java", "-jar", "message-service.jar"]

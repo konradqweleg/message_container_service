@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -22,7 +23,9 @@ import java.net.URISyntaxException;
 @Service
 public class UserServiceAdapter implements UserServicePort {
 
-    private final URI uriGetUserAboutId = new URI("http://user-service:8082/api/v1/users/");
+    @Value("${user.service.url}")
+    private String mainUserServiceUrl;
+
     private final Logger logger = LogManager.getLogger(UserServiceAdapter.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -34,7 +37,7 @@ public class UserServiceAdapter implements UserServicePort {
     @Override
     public Mono<UserDataDTO> getUserAboutId(IdUserDTO idUserDTO) {
         return WebClient.create().get()
-                .uri(uriGetUserAboutId + idUserDTO.idUser().toString())
+                .uri(mainUserServiceUrl + idUserDTO.idUser().toString())
                 .retrieve()
                 .onStatus(HttpStatus.BAD_REQUEST::equals, response -> {
                     logger.error("Received BAD REQUEST status for user with ID: {} , response {}", idUserDTO.idUser(), response);

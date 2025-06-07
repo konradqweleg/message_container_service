@@ -8,6 +8,7 @@ import com.example.messagecontainer.exception.friend_service.InvalidFriendReques
 import com.example.messagecontainer.port.out.FiendServicePort;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -15,7 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,18 +23,16 @@ import org.apache.logging.log4j.Logger;
 @Service
 public class FriendServiceAdapter implements FiendServicePort {
 
-    private final URI uriRequestIsFriends = new URI("http://friend-service:8089/friendsService/api/v1/friends/isFriends");
+    @Value("${friend.service.url}")
+    private String mainFriendServiceUrl;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final Logger logger = LogManager.getLogger(FriendServiceAdapter.class);
 
-    public FriendServiceAdapter() throws URISyntaxException {
-    }
-
     @Override
     public Mono<IsFriendsDTO> isFriends(FriendPairDTO friendsIds) {
-        String uri = UriComponentsBuilder.fromUri(uriRequestIsFriends)
+        String uri = UriComponentsBuilder.fromUri(URI.create(mainFriendServiceUrl + "isFriends"))
                 .queryParam("friendFirstId", friendsIds.idFirstFriend())
                 .queryParam("friendSecondId", friendsIds.idSecondFriend())
                 .toUriString();
